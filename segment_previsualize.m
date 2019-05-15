@@ -24,6 +24,8 @@ meanI2=zeros(size(Icropp));
 medianI2=meanI2;
 sI2=meanI2;
 bwI2=meanI2;
+join1D = false([f c]);
+join2D =false(size(bwI2));
 
 switch method
     % Local mean filter  (a triar entre aquest i el median filter)
@@ -36,6 +38,17 @@ switch method
             sI2(:,:,i)=meanI2(:,:,i)-Icropp(:,:,i)-C;
             bwI2(:,:,i)=im2bw(sI2(:,:,i),0);
             bwI2(:,:,i)=imcomplement(bwI2(:,:,i));
+            
+                    %remove small dots in 2D
+                    CCbwImat(i).CC=bwconncomp(bwI2(:,:,i),4);
+                    for ii=1:CCbwImat(i).CC.NumObjects
+                            pixId=CCbwImat(i).CC.PixelIdxList{ii};
+                                if (length(pixId)>2) 
+                                    join1D(CCbwImat(i).CC.PixelIdxList{ii})=true;
+                                end
+                     end   
+                     join2D(:,:,i)=join1D;
+                     join1D = false([f c]);
         end
 
         % Local median filter 
@@ -48,17 +61,37 @@ switch method
             sI2(:,:,i)=medianI2(:,:,i)-Icropp(:,:,i)-C;
             bwI2(:,:,i)=im2bw(sI2(:,:,i),0);
             bwI2(:,:,i)=imcomplement(bwI2(:,:,i));
+            
+                    %remove small dots in 2D
+                    CCbwImat(i).CC=bwconncomp(bwI2(:,:,i),4);
+                    for ii=1:CCbwImat(i).CC.NumObjects
+                            pixId=CCbwImat(i).CC.PixelIdxList{ii};
+                                if (length(pixId)>2) 
+                                    join1D(CCbwImat(i).CC.PixelIdxList{ii})=true;
+                                end
+                     end   
+                     join2D(:,:,i)=join1D;
+                     join1D = false([f c]);
         end 
 
     otherwise 
         fprintf('\n The method %s is not implemented yet...\n', method);
 end
     
-%% Extract connectivity and size information of each object
+    %% Extract connectivity and size information of each object
 
-[join, CC] = segment_connectivity(bwI2,min,max);
+        CC = bwconncomp(join2D,6);
+        props=regionprops(CC, 'PixelList');
+        join3D =false(size(join2D));    
+      
+    for i=1:CC.NumObjects
+        object=diff(props(i).PixelList);
+        if (sum(object(:,3))>0 && length(object(:,1))+1>min && length(object(:,1))+1<max) % Check the dimensions of this label
+                    join3D(CC.PixelIdxList{i})=true;     
+        end
+    end
 
-implay(join)
+implay(join3D)
 implay(Icropp*5)
 
 end

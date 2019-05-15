@@ -79,13 +79,17 @@ tablerow = 3;
             end
 %             se= strel('disk',2); % VALORATE INCLUDING
 %             bw=imerode(bw,se);
-
+            [m,n,p] = size(bw);
             % Filter for the biggest size object.
             Plaques.cc=bwconncomp(bw,6);
             Plaques.cc.Plaque= regionprops(Plaques.cc,'Area','Centroid');
             [Z,ZZ]=max([Plaques.cc.Plaque.Area]);
             Plaques.cc.image = false(size (Abeta));
+            if Z>10000 %random value to decide that smaller objects are not plaques and then use a centre pixel
             Plaques.cc.image(Plaques.cc.PixelIdxList{ZZ})=true;
+            else
+            Plaques.cc.image(round(m/2),round(n/2),round(p/2))=true;    
+            end
 
 % %             Draw a perimeter around the plaque from the max axis length. Takes into account the radius from the input.
 %             for j=1:size(bw,3)
@@ -115,7 +119,6 @@ tablerow = 3;
         disp('creating neuropil mask')
         for iii=1:length(channels)
             % total area
-            [m,n,p] = size(Channels{iii}.image);
             Channels{iii}.areatotal = m*n*p;
              
                 if strfind(Channels{iii}.name,neuropilchannel)>0

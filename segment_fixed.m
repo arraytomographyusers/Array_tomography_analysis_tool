@@ -1,4 +1,4 @@
-function segment(srcPath,ws,r,method,min,max)
+function segment_fixed(srcPath,Thresholdvalue, min,max)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% Programa de segmentacio de sinapsis %%%%%%%%%%
@@ -9,9 +9,7 @@ function segment(srcPath,ws,r,method,min,max)
 %clear all;
 disp('\n Running synapsis detector with the following parameters...');
 fprintf('srcPath is: %s \n',srcPath)
-fprintf('Window size: %d \n',ws)
-fprintf('Factor C: %d \n',r)
-fprintf('Method: %s \n',method)
+fprintf('Threshold value: %d \n',Thresholdvalue)
 fprintf('Object min size: %d \n',min)
 fprintf('Object MAX size: %d \n',max)
 
@@ -32,7 +30,7 @@ mkdir(srcPath,[filesep 'Segmented']);
 
     %%%%%% Save segmentation paramenters %%%%%%
     fileID = fopen(strcat(srcPath,[filesep 'Segmented' filesep 'parameters.txt']),'w+');
-    fprintf(fileID,'SrcPath: %s\r\nWindow size: %d\r\nFactor C: %d\r\nMethod: %s\r\nObject min size: %d\r\nObject MAX size: %d',srcPath,ws,r,method);
+    fprintf(fileID,'SrcPath: %s\r\nThresholdvalue: %s\r\nObject min size: %d\r\nObject MAX size: %d',srcPath,Thresholdvalue,min,max);
     fclose(fileID);
     check = 1;
 %%
@@ -91,33 +89,15 @@ for jj = 1 : x
     if isBinaryImage
          fprintf('The image %s is a bw image. It will not be processed\n', seq(jj).name);
     else
-    
-    Imat = mat2gray(I);
-
-    %% BW thresholding with mean or median local filter
-
-        meanImat=zeros(size(Imat));
-        sImat=meanImat;
-        medianImat=zeros(size(Imat));
-        bwImat=meanImat;
-        join1D = false([f c]);
-        join2D =false(size(bwImat));
         
-        % choose between mean or median filter
-        switch method
-            % Local mean filter 
-            case 'mean'
-                for i=1:p
-                %     stret = stretchlim(Imat(:,:,i));
-                    C=-mean(mean(Imat(:,:,i)))/r; %%%valor modificable (median,stretch, bins,...)
-                    meanImat(:,:,i)=imfilter(Imat(:,:,i),fspecial('average',ws),'replicate');
+    %% BW thresholding with fixed threshold value
+    Ibw = I>Thresholdvalue;
 
-                    sImat(:,:,i)=meanImat(:,:,i)-(double(Imat(:,:,i)))-C;
-                    bwImat(:,:,i)=im2bw(sImat(:,:,i),0);
-                    bwImat(:,:,i)=imcomplement(bwImat(:,:,i));
-          
-                    %remove small dots in 2D
-                    CCbwImat(i).CC=bwconncomp(bwImat(:,:,i),4);
+     join1D = false([f c]);
+     join2D =false(size(Ibw));
+                %remove small dots in 2D
+                for i=1:p
+                    CCbwImat(i).CC=bwconncomp(Ibw(:,:,i),4);
                     for ii=1:CCbwImat(i).CC.NumObjects
                             pixId=CCbwImat(i).CC.PixelIdxList{ii};
                                 if (length(pixId)>2) 
@@ -127,36 +107,9 @@ for jj = 1 : x
                      join2D(:,:,i)=join1D;
                      join1D = false([f c]);
                 end 
-
-                % Local median filter 
-            case 'median'
-                for i=1:p
-                %     stret = stretchlim(Imat(:,:,i));
-                    C=-median(median(Imat(:,:,i)))/r; %%%valor modificable (median, stretch, bins,...)
-                    medianImat(:,:,i)=medfilt2(Imat(:,:,i),[ws ws]);
-
-                    sImat(:,:,i)=medianImat(:,:,i)-Imat(:,:,i)-C;
-                    bwImat(:,:,i)=im2bw(sImat(:,:,i),0);
-                    bwImat(:,:,i)=imcomplement(bwImat(:,:,i));
-                     
-                    %remove small dots in 2D
-                    CCbwImat(i).CC=bwconncomp(bwImat(:,:,i),4);
-                    for ii=1:CCbwImat(i).CC.NumObjects
-                            pixId=CCbwImat(i).CC.PixelIdxList{ii};
-                                if (length(pixId)>2) 
-                                    join1D(CCbwImat(i).CC.PixelIdxList{ii})=true;
-                                end
-                     end   
-                     join2D(:,:,i)=join1D;
-                     join1D = false([f c]);
-                end 
-
-            otherwise 
-                fprintf('\n The method %s is not implemented yet...\n', method);
-        end
-
+     
+     
     %% Extract connectivity and size information of each object
-
         CC = bwconncomp(join2D,6);
         props=regionprops(CC, 'PixelList');
         join3D =false(size(join2D));    
@@ -167,6 +120,7 @@ for jj = 1 : x
                     join3D(CC.PixelIdxList{i})=true;     
         end
     end
+
 
     %% Save and print results
 
@@ -180,9 +134,10 @@ for jj = 1 : x
 
         %%%%%%% i ho treiem per pantalla %%%%%%%%%%%%%%%%
    
-          fprintf(seq_name, 'done');
+          fprintf(seq_name, ' done');
           fprintf('\n');         
     end
 end
-fprintf('Done, enjoy!');
+
+ fprintf('Done, enjoy!');
 end

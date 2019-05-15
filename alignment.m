@@ -170,11 +170,12 @@ for Files=1:x
             %% APPLY THE TRANSFORM TO THE OTHER CHANNELS
             for iii=1:length(channels)
                 disp(strcat ('processing',{' '}, Channels{iii}.name)) 
+                seq_name= Channels{iii}.name(1:(end-4));
                 for i=1:z
                    moving=Channels{iii}.image(:,:,i);
                    tform = t(i).tformfin;
                    image_reg(:,:,i) = imwarp(moving,tform,'OutputView',imref2d(size(Channels{iii}.image(:,:,1))));
-                   outputFileName = strcat(srcPath, [filesep 'Aligned' filesep],Channels{iii}.name, '.tif');
+                   outputFileName = strcat(srcPath, [filesep 'Aligned' filesep], seq_name, '.tif');
                    imwrite(image_reg(:,:,i),outputFileName,'WriteMode', 'append',  'Compression','none');
                 end    
             end 

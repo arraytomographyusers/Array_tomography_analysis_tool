@@ -68,7 +68,7 @@ S.NAME = {'No sequence selected'};
 
     function [] = segment(varargin)
     % Callback for pushbutton.
-             segment_GUI
+             segment_preGUI
              set(S.fh,'DeleteFcn', @preCloseMain);
     end
 
