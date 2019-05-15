@@ -9,33 +9,25 @@ I = read_stackTiff(strcat(srcPath,filesep,name)); % read tiff stack
 
 Imat = mat2gray(I);
 
-%% Cropping image
-if and(f>251,c>151) %set random crop of the image
-    Icropp=zeros(151,251);
-    for i=1:p
-        Icropp(:,:,i) = imcrop(Imat(:,:,i),[round(f/3) round(c/3) 250 150]);
-    end
-else
-    Icropp = Imat;
-end
+
 %% BW thresholding with mean or median local filter
 
-meanI2=zeros(size(Icropp));
+meanI2=zeros(size(Imat));
 medianI2=meanI2;
 sI2=meanI2;
 bwI2=meanI2;
 join1D = false([f c]);
-join2D =false(size(bwI2));
+join2D =false(size(Imat));
 
 switch method
     % Local mean filter  (a triar entre aquest i el median filter)
     case 'mean'
         for i=1:p
         %     stret = stretchlim(I2(:,:,i));
-            C=-mean(mean(Icropp(:,:,i)))/sf; %%%modificable value(median, bins,...)
-            meanI2(:,:,i)=imfilter(Icropp(:,:,i),fspecial('average',ws),'replicate');
+            C=-mean(mean(Imat(:,:,i)))/sf; %%%modificable value(median, bins,...)
+            meanI2(:,:,i)=imfilter(Imat(:,:,i),fspecial('average',ws),'replicate');
 
-            sI2(:,:,i)=meanI2(:,:,i)-Icropp(:,:,i)-C;
+            sI2(:,:,i)=meanI2(:,:,i)-Imat(:,:,i)-C;
             bwI2(:,:,i)=im2bw(sI2(:,:,i),0);
             bwI2(:,:,i)=imcomplement(bwI2(:,:,i));
             
@@ -55,10 +47,10 @@ switch method
     case 'median'
         for i=1:p
         %     stret = stretchlim(I2(:,:,i));
-            C=-median(median(Icropp(:,:,i)))/sf; %%% modificable value (median, bins,...)
-            medianI2(:,:,i)=medfilt2(Icropp(:,:,i),[ws ws]);
+            C=-median(median(Imat(:,:,i)))/sf; %%% modificable value (median, bins,...)
+            medianI2(:,:,i)=medfilt2(Imat(:,:,i),[ws ws]);
 
-            sI2(:,:,i)=medianI2(:,:,i)-Icropp(:,:,i)-C;
+            sI2(:,:,i)=medianI2(:,:,i)-Imat(:,:,i)-C;
             bwI2(:,:,i)=im2bw(sI2(:,:,i),0);
             bwI2(:,:,i)=imcomplement(bwI2(:,:,i));
             
@@ -92,6 +84,6 @@ end
     end
 
 implay(join3D)
-implay(Icropp*5)
+implay(Imat*5)
 
 end
