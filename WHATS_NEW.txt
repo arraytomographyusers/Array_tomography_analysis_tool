@@ -1,3 +1,8 @@
+190606
+- Colocalization: Instead of percentage of objects, number of objects colocalizing.
+- Segment_previsualize: Previsualization is the whole image, not cropp. Bug fixed.
+
+
 190514
 - Alignment: removed .tif.tif issue.
 - 3D filtering: faster way using object properties.

@@ -140,7 +140,8 @@ for Files=1:x
             disp('Finding distances between objects')
             tic
                 for i=1:length(channels)
-                    for ii=1:Channels{i}.NumObjects
+                    idxparfor=Channels{i}.NumObjects;
+                    for ii=1:idxparfor
                         for j=1:length(channels) 
                             Channels{i}.coloc(ii).(char(channels(j))) =0; % To start always for channel 1 (keeps columns order)
                             distanceN=1; % To store all the closest objects
@@ -217,7 +218,7 @@ for Files=1:x
                 table{tablerow,1}=(Channels{i}.name);
                 table{tablerow,2}=Channels{i}.NumObjects;
                 for j=1:length(list)
-                    table{tablerow,j+2}= (sum(cat(1,Channels{i}.results.(strcat(channels{i},'_',(char (list{1,j})))))))/(Channels{i}.NumObjects)*100;
+                    table{tablerow,j+2}= (sum(cat(1,Channels{i}.results.(strcat(channels{i},'_',(char (list{1,j}))))))); % output: number of objects positive for this combination of channels
                 end
                 tablerow=tablerow+1;
             end

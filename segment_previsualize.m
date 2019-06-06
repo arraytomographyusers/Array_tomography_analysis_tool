@@ -9,7 +9,6 @@ I = read_stackTiff(strcat(srcPath,filesep,name)); % read tiff stack
 
 Imat = mat2gray(I);
 
-
 %% BW thresholding with mean or median local filter
 
 meanI2=zeros(size(Imat));
@@ -17,7 +16,7 @@ medianI2=meanI2;
 sI2=meanI2;
 bwI2=meanI2;
 join1D = false([f c]);
-join2D =false(size(Imat));
+join2D =false(size(bwI2));
 
 switch method
     % Local mean filter  (a triar entre aquest i el median filter)
