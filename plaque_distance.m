@@ -192,8 +192,15 @@ tablerow = 3;
                         distance = sqrt((((ref_boundary(:,2))-(Channels{i}.cc(j).Centroid(1)))*xy).^2 + (((ref_boundary(:,1))-(Channels{i}.cc(j).Centroid(2)))*xy).^2 + (((ref_boundary(:,3))-(Channels{i}.cc(j).Centroid(3)))*z).^2);
                         Channels{i}.distances(j) = min(distance);
                 end
+                if isfield (Channels{i}, 'distances')
+                    
                 [Channels{i}.hist, Channels{i}.bin]=histcounts(Channels{i}.distances, edges);
                 Channels{i}.Objectbin = discretize (Channels{i}.distances,edges);
+                else
+                    Channels{i}.bin = edges;
+                    Channels{i}.hist= zeros (1,(length (edges)-1));
+                    Channels{i}.Objectbin=0;
+                end
                 
                 % save bins images if selected 
                 if contains (SaveImages, 'Aye')

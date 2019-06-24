@@ -1,3 +1,8 @@
+190624
+- Colocalization: Parameters saved in an Excel file.
+- Plaque distance: Fixed issue with empty images (no plaque or no objects).
+
+
 190606
 - Colocalization: Instead of percentage of objects, number of objects colocalizing.
 - Segment_previsualize: Previsualization is the whole image, not cropp. Bug fixed.

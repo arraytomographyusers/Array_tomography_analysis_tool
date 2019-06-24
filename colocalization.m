@@ -66,7 +66,7 @@ end
 % Choose if you want to save the image of the colocalizing objects.
 title = 'Save images';
 prompt = 'Do you want to save the images of the colocalization?                      (all the combinations, many images)';
-SaveImages = questdlg(prompt , title, 'Aye','Nae','cancel');
+SaveImages = questdlg(prompt , title, 'Aye','No','cancel');
 
 if contains(SaveImages, 'Aye')
     mkdir(srcPath,[filesep 'Results' filesep 'ColocImages']);
@@ -99,6 +99,26 @@ end
 for i=1:X
     list{i}=strcat (K{i,:});
 end
+
+% Save parameters
+parameters ((size (ColocChannel,1))+13,(size (ColocChannel,2))) ={[]};
+parameters (1,1) = {'Lateral resolution (X-Y) in micron/pixel'};
+parameters(2,1) = {xy};
+parameters (4,1) = {'Axial resolution (Z) in micron/pixel'};
+parameters(5,1) = {z};
+parameters (7,1) = {'Which maximum distance would you like to use? in micron'};
+parameters (8,1) = {maxdistance};
+parameters (10,1) = {'Which minimun overlap between objects would you like to use? in percent of first object area'};
+parameters (11,1) = {minoverlap};
+parameters (13,:)= channels;
+parameters (14:end,:)=ColocChannel;
+Parameters = cell2table (parameters);
+writetable (Parameters, (strcat(srcPath,[filesep 'Results' filesep 'Parameters.xls'])));
+
+
+
+
+ 
 
 % Prepare the table for results
 list(end)=[]; % delete last combination possible (no channels colocalizind with no channels, all 0).
@@ -226,6 +246,7 @@ for Files=1:x
             tic
                 % Save .mat in case you want to use it later (all coloc images, full distances, centroids, ...)
                  save ((strcat(srcPath,[filesep 'Results' filesep 'Coloc_All_'],(char(Channels{1}.name)),'.mat')), 'Channels');
+                 
             toc
         end
 
@@ -236,6 +257,7 @@ end
     disp('saving results')
     results = cell2table (table(2:end,:), 'VariableNames', (table(1,:)));
     writetable (results, (strcat(srcPath,[filesep 'Results' filesep 'Colocalization.xls'])));
+    
     
 disp('Done - enjoy! :)')
 
