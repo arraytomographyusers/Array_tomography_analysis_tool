@@ -155,7 +155,9 @@ tablerow = 3;
             for i=1:size(bw,3)
                 [boundarypoints,boundaryimage] = bwboundaries(Plaques.cc.image(:,:,i));
                 ref_boundary{i}=vertcat (boundarypoints{:}); % merge all the diferent objects perimetres
-                ref_boundary{i}(:,3)=i; % save which z it is
+                if ~isempty (boundarypoints)% add the z position only if there are positive pixels in that z.
+                    ref_boundary{i}(:,3)=i; % save which z it is
+                end
                 boundary(:,:,i)=imbinarize(boundaryimage); % create the boundary image
             end
             ref_boundary=cat(1, ref_boundary{:});
