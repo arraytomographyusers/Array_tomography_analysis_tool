@@ -1,4 +1,7 @@
 190624
+- Plaque distance: fixed distance calculations.
+
+190624
 - Colocalization: Parameters saved in an Excel file.
 - Plaque distance: Fixed issue with empty images (no plaque or no objects).
 
