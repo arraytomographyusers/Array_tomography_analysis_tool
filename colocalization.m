@@ -21,7 +21,7 @@ function colocalization()
 
 %% Source Files and max distances
 srcPath = uigetdir('Select the sequence path'); %Images Location
-mkdir(srcPath, [filesep 'Results']);
+mkdir(srcPath, [filesep 'Coloc_Results']);
 srcFiles = strcat(srcPath,[filesep '*.tif']);  % the folder in which ur images exists
 srcFiles = dir(srcFiles);
 [x,y] = size(srcFiles);
@@ -39,7 +39,7 @@ tic
 % 4-min overlap between objects (percent of first object area).
 prompt = {'Enter space-separed channel names','Lateral resolution (X-Y) in micron/pixel', 'Axial resolution (Z) in micron/pixel', 'Which maximum distance would you like to use? in micron', 'Which minimun overlap between objects would you like to use? in percent of first object area'};
 title = 'Channel names';
-definput = {'abeta syph psd tmem97', '0.1', '0.07', '0.5', '10'};
+definput = {'OC PSD SYPH TAU', '0.102', '0.07', '0.5', '10'};
 answer = inputdlg(prompt,title,[1 60],definput);
 channels= strsplit(answer{1});
 xy= str2double(answer{2});
@@ -69,7 +69,7 @@ prompt = 'Do you want to save the images of the colocalization?                 
 SaveImages = questdlg(prompt , title, 'Aye','No','cancel');
 
 if contains(SaveImages, 'Aye')
-    mkdir(srcPath,[filesep 'Results' filesep 'ColocImages']);
+    mkdir(srcPath,[filesep 'Coloc_Results' filesep 'ColocImages']);
 end
 
 
@@ -113,7 +113,7 @@ parameters (11,1) = {minoverlap};
 parameters (13,:)= channels;
 parameters (14:end,:)=ColocChannel;
 Parameters = cell2table (parameters);
-writetable (Parameters, (strcat(srcPath,[filesep 'Results' filesep 'Parameters.xls'])));
+writetable (Parameters, (strcat(srcPath,[filesep 'Coloc_Results' filesep 'Parameters.xls'])));
 
 
 
@@ -161,6 +161,7 @@ for Files=1:x
             tic
                 for i=1:length(channels)
                     idxparfor=Channels{i}.NumObjects;
+                     disp(strcat ('We are working in channel',{' '}, Channels{i}.name,{' '}, 'with all other channels, sorry, just wait a wee more')),
                     for ii=1:idxparfor
                         for j=1:length(channels) 
                             Channels{i}.coloc(ii).(char(channels(j))) =0; % To start always for channel 1 (keeps columns order)
@@ -168,6 +169,8 @@ for Files=1:x
                             %choose the type of colocalization between the channels
                             if ismember(ColocChannel{i,j},{'distance'})
                                for jj=1:Channels{j}.NumObjects
+%                                    disp(strcat ('channel',{' '}, Channels{i}.name,{' '}, 'with channel',{' '},Channels{j}.name,{' '}, 'object',{' '}, num2str(jj)))
+                                   
                                    distance = sqrt((((Channels{i}.cc(ii).Centroid(1))-(Channels{j}.cc(jj).Centroid(1)))*xy)^2 + (((Channels{i}.cc(ii).Centroid(2))-(Channels{j}.cc(jj).Centroid(2)))*xy)^2 + (((Channels{i}.cc(ii).Centroid(3))-(Channels{j}.cc(jj).Centroid(3)))*z)^2);
                                    if (distance < maxdistance)~=0
                                             Channels{i}.coloc(ii).(char(channels(j))) =1;
@@ -178,6 +181,7 @@ for Files=1:x
                             end
                             if ismember(ColocChannel{i,j},{'overlap'})
                                for jj=1:Channels{j}.NumObjects
+%                                    disp(strcat ('channel',{' '}, Channels{i}.name,{' '}, 'with channel',{' '},Channels{j}.name,{' '}, 'object',{' '}, num2str(jj)))
                                    overlap = intersect(Channels{i}.PixelIdxList{ii},Channels{j}.PixelIdxList{jj});
                                    if (length(overlap)/length(Channels{i}.PixelIdxList{ii}))*100 > minoverlap % find if the overlap is bigger than the minoverlap we choosed. Here we could do it as fixed number of pixels.
                                             Channels{i}.coloc(ii).(char(channels(j))) =1;
@@ -218,7 +222,7 @@ for Files=1:x
                      if contains (SaveImages, 'Aye')
                          if regexp(list{1,j},channels{i})~=0 % Only images of the main channel (i).
                              for ii=1:Channels{i}.ImageSize(3)
-                                outputFileName = strcat(srcPath,[filesep 'Results' filesep 'ColocImages' filesep], Channels{i}.name(1:end-4),'_',char (list{1,j}), '.tif');
+                                outputFileName = strcat(srcPath,[filesep 'Coloc_Results' filesep 'ColocImages' filesep], Channels{i}.name(1:end-4),'_',char (list{1,j}), '.tif');
                                 imwrite(uint16(Channels{i}.images.(strcat(channels{i},'_',(char (list{1,j}))))(:,:,ii)),outputFileName, 'WriteMode', 'append',  'Compression','none');
                              end
                          end
@@ -245,18 +249,20 @@ for Files=1:x
             toc
             tic
                 % Save .mat in case you want to use it later (all coloc images, full distances, centroids, ...)
-                 save ((strcat(srcPath,[filesep 'Results' filesep 'Coloc_All_'],(char(Channels{1}.name)),'.mat')), 'Channels');
+                 save ((strcat(srcPath,[filesep 'Coloc_Results' filesep 'Coloc_All_'],(char(Channels{1}.name)),'.mat')), 'Channels');
                  
             toc
+            
+            disp('saving results')
+            results = cell2table (table(2:end,:), 'VariableNames', (table(1,:)));
+            writetable (results, (strcat(srcPath,[filesep 'Coloc_Results' filesep 'Colocalization.xls'])));
+        
         end
 
      clear Channels
         
 end
 
-    disp('saving results')
-    results = cell2table (table(2:end,:), 'VariableNames', (table(1,:)));
-    writetable (results, (strcat(srcPath,[filesep 'Results' filesep 'Colocalization.xls'])));
     
     
 disp('Done - enjoy! :)')

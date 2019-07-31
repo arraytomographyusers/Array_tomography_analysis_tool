@@ -1,3 +1,8 @@
+190731
+- Plaque distance: - plaque boundary is done from the original mask (not dilated).
+		   - results are saved for each case while running.
+- Colocalization:  - results are saved for each case while running.
+
 190624
 - Plaque distance: fixed distance calculations.
 

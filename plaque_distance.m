@@ -3,9 +3,9 @@ function plaque_distance()
 
 % Choose image location and create the results folders
 srcPath = uigetdir('Select the sequence path'); 
-mkdir(srcPath, [filesep 'Results']);
-mkdir(srcPath,[filesep 'Results' filesep 'masked_images']);
-mkdir(srcPath,[filesep 'Results' filesep 'bins_images']);
+mkdir(srcPath, [filesep 'PD_Results']);
+mkdir(srcPath,[filesep 'PD_Results' filesep 'masked_images']);
+mkdir(srcPath,[filesep 'PD_Results' filesep 'bins_images']);
 srcFiles = strcat(srcPath,[filesep '*.tif']); 
 srcFiles = dir(srcFiles);
 [x,y] = size(srcFiles);
@@ -38,7 +38,7 @@ neuropilchannel = (answer{7});% Will be used to calculate the neuropil mask and 
 % Choose if you want to save the image of the colocalizing objects.
 title = 'Save images';
 prompt = 'Do you want to save the images of all the bins?                          (all the combinations, many images)';
-SaveImages = questdlg(prompt , title, 'Aye','Nae','cancel');
+SaveImages = questdlg(prompt , title, 'Aye','No','cancel');
 
 % Prepare the table for results
 Bins=num2cell(edges (2:end));
@@ -81,7 +81,8 @@ tablerow = 3;
 %             bw=imerode(bw,se);
             [m,n,p] = size(bw);
             % Filter for the biggest size object.
-            Plaques.cc=bwconncomp(bw,6);
+%             Plaques.cc=bwconncomp(bw,6);
+            Plaques.cc=bwconncomp(Abeta,6);
             Plaques.cc.Plaque= regionprops(Plaques.cc,'Area','Centroid');
             [Z,ZZ]=max([Plaques.cc.Plaque.Area]);
             Plaques.cc.image = false(size (Abeta));
@@ -110,7 +111,7 @@ tablerow = 3;
 %             disp('saving the mask')
 %             % save mask
 %             for i=1:size(bw,3)
-%               outputFileName = strcat(srcPath,[filesep 'Results' filesep 'masked_images' filesep 'Mask_plaque'], srcFiles(Files).name, '.tif');
+%               outputFileName = strcat(srcPath,[filesep 'PD_Results' filesep 'masked_images' filesep 'Mask_plaque'], srcFiles(Files).name, '.tif');
 %               imwrite(uint16(mask(:,:,i)),outputFileName, 'WriteMode', 'append',  'Compression','none');
 %             end
             
@@ -139,7 +140,7 @@ tablerow = 3;
                     % save neuropil mask image
                     seq_name = Channels{iii}.name(1:(end-4));
                  for i=1:size(bw,3)
-                            outputFileName = strcat(srcPath,(strcat([ filesep 'Results' filesep 'masked_images' filesep], srcFiles(Files).name, '_NeuropilMask.tif')));
+                            outputFileName = strcat(srcPath,(strcat([ filesep 'PD_Results' filesep 'masked_images' filesep], srcFiles(Files).name, '_NeuropilMask.tif')));
                             imwrite(uint16(NeuropilMask(:,:,i)),outputFileName, 'WriteMode', 'append',  'Compression','none');
                  end
                 else
@@ -164,7 +165,7 @@ tablerow = 3;
             
             % Save boundary image
              for i=1:size(bw,3)
-                        outputFileName = strcat(srcPath,(strcat([ filesep 'Results' filesep 'bins_images' filesep 'boundary_plaque'], srcFiles(Files).name, '.tif')));
+                        outputFileName = strcat(srcPath,(strcat([ filesep 'PD_Results' filesep 'bins_images' filesep 'boundary_plaque'], srcFiles(Files).name, '.tif')));
                         imwrite(uint16(boundary(:,:,i)),outputFileName, 'WriteMode', 'append',  'Compression','none');
              end
              
@@ -180,7 +181,7 @@ tablerow = 3;
                 Channels{iii}.bw=bwconncomp(Channels{iii}.masked,6);
                 Channels{iii}.cc=regionprops(Channels{iii}.bw,'centroid');
                   for i=1:size(bw,3)
-                    outputFileName = strcat(srcPath, [filesep 'Results' filesep 'masked_images' filesep],Channels{iii}.name, '_masked.tif');
+                    outputFileName = strcat(srcPath, [filesep 'PD_Results' filesep 'masked_images' filesep],Channels{iii}.name, '_masked.tif');
                     imwrite(uint16(Channels{iii}.masked(:,:,i)),outputFileName, 'WriteMode', 'append',  'Compression','none');
                   end
             end
@@ -215,7 +216,7 @@ tablerow = 3;
                         end
                         % Saving images.
                         for jjj=1:size(bw,3)
-                            outputFileName = strcat(srcPath,(strcat([filesep 'Results' filesep 'bins_images' filesep],strcat('ImageBin_',num2str(jj),'_'),Channels{i}.name,'.tif')));
+                            outputFileName = strcat(srcPath,(strcat([filesep 'PD_Results' filesep 'bins_images' filesep],strcat('ImageBin_',num2str(jj),'_'),Channels{i}.name,'.tif')));
                             imwrite(uint16(Channels{i}.(strcat('ImageBin_',num2str(jj)))(:,:,jjj)),outputFileName, 'WriteMode', 'append',  'Compression','none');
                         end
                         if strfind(Channels{i}.name,neuropilchannel)>0 % Calculate Bin area using Bin image of neuropil channel
@@ -236,7 +237,7 @@ tablerow = 3;
                                 end
                             
                             for jjj=1:size(bw,3)
-                                outputFileName = strcat(srcPath,(strcat([filesep 'Results' filesep 'bins_images' filesep],strcat('MaskBin_',num2str(jj),'_'),Channels{i}.name,'.tif')));
+                                outputFileName = strcat(srcPath,(strcat([filesep 'PD_Results' filesep 'bins_images' filesep],strcat('MaskBin_',num2str(jj),'_'),Channels{i}.name,'.tif')));
                                 imwrite(uint16(Channels{i}.(strcat('MaskBin_',num2str(jj)))(:,:,jjj)),outputFileName, 'WriteMode', 'append',  'Compression','none');
                             end              
                        end
@@ -262,6 +263,9 @@ tablerow = 3;
                 tablerow=tablerow+1;
             end
             
+            disp('saving results')
+            results = cell2table (table(1:end,:));
+            writetable (results, (strcat(srcPath,[filesep 'PD_Results' filesep 'Plaque_distance.xls'])));
         end
         clear Channels
         clear Plaques
@@ -272,9 +276,7 @@ tablerow = 3;
         
     end
     
-    disp('saving results')
-    results = cell2table (table(1:end,:));
-    writetable (results, (strcat(srcPath,[filesep 'Results' filesep 'Plaque_distance.xls'])));
+
     
          toc
     disp('Doner! enjoy! :)')

@@ -2,8 +2,8 @@ function density()
 
 % Choose image location and create the results folders
 srcPath = uigetdir('Select the sequence path'); 
-mkdir(srcPath, [filesep 'Results']);
-mkdir(srcPath, [filesep 'Results' filesep 'Neuropilmask']);
+mkdir(srcPath, [filesep 'Density_Results']);
+mkdir(srcPath, [filesep 'Density_Results' filesep 'Neuropilmask']);
 srcFiles = strcat(srcPath,[filesep '*.tif']);  % the folder in which ur images exists
 srcFiles = dir(srcFiles);
 [x,y] = size(srcFiles);
@@ -11,7 +11,7 @@ srcFiles = dir(srcFiles);
 % Input dialog for channels. 6e10 can not be used as name.
 prompt = {'Enter space-separed channel names', 'Which channel will be used for neuropil mask?','Lateral resolution (X-Y) in micron/pixel', 'Axial resolution (Z) in micron/pixel'};
 title = 'Channel names';
-definput = {'abeta syph psd tmem97', 'syph', '0.108', '0.07'};
+definput = {'OC PSD SYPH TAU', 'SYPH', '0.102', '0.07'};
 answer = inputdlg(prompt,title,[1 40],definput);
 channels = strsplit(answer{1});
 neuropilchannel = answer{2};% Will be used to create a neuropil mask.
@@ -60,7 +60,7 @@ for Files=1:x
                     Channels{iii}.areaneuropil = Channels{iii}.areatotal - (nnz(~neuropilmask)*p);  
                     % save neuropil mask image
                     seq_name = Channels{iii}.name(1:(end-4));
-                    outputFileName = strcat(srcPath,[filesep 'Results' filesep 'Neuropilmask' filesep],seq_name,'_neuropilMask.tif');
+                    outputFileName = strcat(srcPath,[filesep 'Density_Results' filesep 'Neuropilmask' filesep],seq_name,'_neuropilMask.tif');
                     imwrite(uint16(neuropilmask),outputFileName, 'WriteMode', 'append',  'Compression','none');
                     neuropilarea = Channels{iii}.areaneuropil;
                 else
@@ -80,7 +80,7 @@ for Files=1:x
 end
     disp('saving results')
     results = cell2table (table(2:end,:), 'VariableNames', (table(1,:)));
-    writetable (results, (strcat(srcPath,[filesep 'Results' filesep 'Densities.xls'])));
+    writetable (results, (strcat(srcPath,[filesep 'Density_Results' filesep 'Densities.xls'])));
     
     
 fprintf('\n Done - enjoy! \n')
